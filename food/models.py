@@ -30,6 +30,9 @@ class Category(models.Model):
         max_length  = 255
     )
 
+    def __str__(self):
+        return self.name
+
 class Food(models.Model):
 
     name        = models.CharField(
@@ -81,6 +84,10 @@ class Food(models.Model):
                         decimal_places  =2
                     )),
             )['avg']
+
+    @property
+    def reviews_count(self):
+        return self.reviews.count()
 
 class Review(TimeStampedModel):
     
