@@ -29,6 +29,7 @@ class Post(TimeStampedModel):
 
     class Meta:
         db_table = 'posts'
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.user} | {self.title}'
@@ -61,6 +62,7 @@ class Comment(TimeStampedModel):
 
     class Meta:
         db_table = 'comments'
+        ordering = ['-created_at']
     
     def __str__(self):
         return f'{self.post} | {self.user} | {self.content}'
