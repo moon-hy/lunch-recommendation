@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -9,12 +9,13 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST
 )
 
-from food.serializers import FoodListSerializer, FoodDetailSerializer, ReviewListSerializer
+from food.serializers import FoodListSerializer, FoodDetailSerializer, ReviewSerializer
 from food.models import Food, Review
 
 
 class FoodList(APIView):
     serializer_class= FoodListSerializer
+    permission_classes  = (IsAuthenticated, )
 
     def get(self, request):
         foods       = Food.objects.all()
@@ -30,6 +31,7 @@ class FoodList(APIView):
 
 class FoodDetail(APIView):
     serializer_class= FoodDetailSerializer
+    permission_classes  = (IsAuthenticated, )
 
     def get(self, request, pk):
         food        = Food.objects.get(pk=pk)
@@ -58,7 +60,8 @@ class FoodDetail(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 class ReviewList(APIView):
-    serializer_class= ReviewListSerializer
+    serializer_class    = ReviewSerializer
+    permission_classes  = (IsAuthenticated, )
 
     def get(self, request, pk):
         reviews     = Review.objects.filter(food=pk)
@@ -68,6 +71,20 @@ class ReviewList(APIView):
     def post(self, request, pk):
         serializer  = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save(user=request.user, food_id=pk)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class ReviewDetail(APIView):
+    serializer_class    = ReviewSerializer
+    permission_classes  = (IsAuthenticated, )
+
+    def get(self, request, pk):
+        review      = Review.objects.get(pk=pk)
+        serializer  = self.serializer_class(review)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    def delete(self, request, pk):
+        review       = Review.objects.get(pk=pk)
+        review.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
