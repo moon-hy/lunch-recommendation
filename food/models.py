@@ -64,7 +64,9 @@ class Food(models.Model):
     tags        = models.ManyToManyField(
         Tag,
         related_name= 'foods',
-        verbose_name= 'tags'
+        verbose_name= 'tags',
+        null        = True,
+        blank       = True,
     )
 
     class Meta:

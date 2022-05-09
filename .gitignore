@@ -6,5 +6,6 @@ secrets.json
 media
 images
 venv
-*/migrations/*.py
+*/migrations/**
+!*/migrations/__init__.py
 *.json

@@ -2,6 +2,7 @@ from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -16,6 +17,7 @@ from post.models import Post, Comment
 class PostList(APIView):
     serializer_class= PostListSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     # def get_permissions(self):
     #     permission_classes = ()
@@ -53,6 +55,7 @@ class PostList(APIView):
 class PostDetail(APIView):
     serialzer_class     = PostDetailSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         post        = Post.objects.get(pk=pk)
@@ -83,6 +86,7 @@ class PostDetail(APIView):
 class PostCommentList(APIView):
     serializer_class    = CommentSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         comments    = Comment.objects.filter(post=pk)
@@ -99,6 +103,7 @@ class PostCommentList(APIView):
 class CommentDetail(APIView):
     serializer_class    = CommentSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         comment     = Comment.objects.get(pk=pk)

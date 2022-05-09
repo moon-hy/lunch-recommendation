@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -16,6 +17,7 @@ from food.models import Food, Review
 class FoodList(APIView):
     serializer_class= FoodListSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         foods       = Food.objects.all()
@@ -32,10 +34,15 @@ class FoodList(APIView):
 class FoodDetail(APIView):
     serializer_class= FoodDetailSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         food        = Food.objects.get(pk=pk)
         serializer  = self.serializer_class(food)
+        print('------------------------')
+        print(serializer)
+        print(serializer.data)
+        print('------------------------')
         return Response(serializer.data, status=HTTP_200_OK)
 
     def put(self, request, pk):
@@ -62,6 +69,7 @@ class FoodDetail(APIView):
 class ReviewList(APIView):
     serializer_class    = ReviewSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         reviews     = Review.objects.filter(food=pk)
@@ -78,6 +86,7 @@ class ReviewList(APIView):
 class ReviewDetail(APIView):
     serializer_class    = ReviewSerializer
     permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, pk):
         review      = Review.objects.get(pk=pk)

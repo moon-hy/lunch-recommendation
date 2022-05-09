@@ -4,13 +4,13 @@ from food.models import Food, Tag, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user            = serializers.ReadOnlyField(source='user.username')
+    nickname        = serializers.ReadOnlyField(source='user.profile.nickname')
     food            = serializers.ReadOnlyField(source='food.name')
 
     class Meta:
         model   = Review
         fields  = [
-            'id', 'user', 'food', 'content', 'rating', 'created_at' 
+            'id', 'nickname', 'food', 'content', 'rating', 'created_at' 
         ]
 
 class FoodListSerializer(serializers.ModelSerializer):
