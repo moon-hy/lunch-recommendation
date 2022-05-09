@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -26,6 +27,19 @@ class PostList(APIView):
 
     def get(self, request):
         posts       = Post.objects.all()
+
+        if q := request.query_params.get('q'):
+            posts   = posts.filter(title__icontains=q)
+
+        if u := request.query_params.get('u'):
+            posts   = posts.filter(user__username__icontains=u)
+
+        if s := request.query_params.get('s'):
+            if s == 'comment':
+                posts = posts.annotate(
+                    count=Count('comments')
+                    ).order_by('-count')
+
         serializer  = self.serializer_class(posts, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
