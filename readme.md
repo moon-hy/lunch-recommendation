@@ -1,13 +1,57 @@
 # init
 
-1. python manage.py makemigrations
-2. python manage.py migrate --run-syncdb
+1. python manage.py makemigrations post, food
+2. python manage.py migrate
+3. python manage.py createsuperuser
+4. login required
+
+
+# end points
+
+- /api/food
+    - GET
+    - POST
+
+- /api/food/{int:pk}
+    - GET
+    - PUT
+    - PATCH
+    - DELETE
+
+- /api/food/{int:pk}/reviews
+    - GET
+    - POST
+
+- /api/food/reviews{int:pk}
+    - GET
+    - DELETE
+
+---
+
+- /api/post
+    - GET
+    - POST
+
+- /api/post/{int:pk}
+    - GET
+    - PUT
+    - PATCH
+    - DELETE
+
+- /api/post/{int:pk}/comments
+    - GET
+    - POST
+
+- /api/post/comments/{int:pk}
+    - GET
+    - DELETE
+
 
 # secrets.json
 
 >{  
->    "SECRET_KEY": "{MY SECRET KEY}",  
->    "DEBUG": "True"  
+><br><br><br><br>"SECRET_KEY": "{MY SECRET KEY}",  
+><br><br><br><br>"DEBUG": "True"  
 >}
 
 # runserver
