@@ -5,9 +5,9 @@
 
 # secrets.json
 
-> {
->    "SECRET_KEY": "{MY SECRET KEY}",
->    "DEBUG": "True"
+>{  
+>    "SECRET_KEY": "{MY SECRET KEY}",  
+>    "DEBUG": "True"  
 >}
 
 # runserver
