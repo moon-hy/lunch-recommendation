@@ -31,6 +31,11 @@
 - /api/post
     - GET
     - POST
+    - Params
+        - q: search title (not required)
+        - u: search username (not required)
+        - s: sort by (not required)
+            - comment
 
 - /api/post/{int:pk}
     - GET
