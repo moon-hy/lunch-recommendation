@@ -1,13 +1,30 @@
 # init
 
-0. pip install django djangorestframework Pillow
-1. python manage.py makemigrations post, food
+0. pip install django djangorestframework django-cors-headers Pillow
+1. python manage.py makemigrations
 2. python manage.py migrate
 3. python manage.py createsuperuser
 4. login required
 
 
 # end points
+
+- /api/user
+    - GET
+    - POST
+
+- /api/user/{int:pk}
+    - GET
+    - PUT
+    - PATCH
+    - DELETE
+
+---
+
+- /api/auth/token
+    - POST
+
+---
 
 - /api/food
     - GET
