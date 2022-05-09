@@ -55,10 +55,17 @@
 # secrets.json
 
 >{  
-><br><br><br><br>"SECRET_KEY": "{MY SECRET KEY}",  
-><br><br><br><br>"DEBUG": "True"  
+>"SECRET_KEY": "{MY SECRET KEY}",  
+>"DEBUG": "True"  
 >}
 
 # runserver
 
 1. python manage.py runserver
+
+# todo
+
+- 사용자의 선호 음식, 비선호 음식 검색
+- 사용자가 결정한 음식 데이터 저장
+- 추천 결과 반환 API
+- ...
