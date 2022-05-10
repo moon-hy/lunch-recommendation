@@ -27,6 +27,13 @@ User = get_user_model()
 class UserList(APIView):
     authentication_classes = (TokenAuthentication,)
     
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            authentication_classes = ()
+        else:
+            authentication_classes = (TokenAuthentication, )
+        return [auth() for auth in authentication_classes]
+
     def get_permissions(self):
         if self.request.method == 'POST':
             permission_classes = (AllowAny,)
