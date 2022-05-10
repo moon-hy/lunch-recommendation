@@ -58,7 +58,9 @@ class Food(models.Model):
 
     image       = models.ImageField(
         verbose_name= 'image',
-        upload_to   = 'food/images/'
+        upload_to   = 'food/images/',
+        blank       = True,
+        null        = True,
     )
 
     tags        = models.ManyToManyField(
@@ -92,17 +94,10 @@ class Food(models.Model):
 
 class Review(TimeStampedModel):
     
-    user        = models.ForeignKey(
-        User,
-        related_name= 'reviews',
-        verbose_name= 'user',
-        on_delete   = models.CASCADE
-    )
-
-    food        = models.ForeignKey(
-        Food,
-        related_name= 'reviews',
-        verbose_name= 'food',
+    record      = models.OneToOneField(
+        'user.Record',
+        related_name= 'review',
+        verbose_name= 'record',
         on_delete   = models.CASCADE
     )
 
