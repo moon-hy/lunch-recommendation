@@ -10,8 +10,8 @@ from post.views import (
 
 
 urlpatterns = [
-    path('', PostList.as_view()),
-    path('/<int:pk>', PostDetail.as_view()),
-    path('/<int:pk>/comments', PostCommentList.as_view()),
+    path('/posts', PostList.as_view()),
+    path('/posts/<int:pk>', PostDetail.as_view()),
+    path('/posts/<int:pk>/comments', PostCommentList.as_view()),
     path('/comments/<int:pk>', CommentDetail.as_view()),
 ]

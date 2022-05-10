@@ -32,7 +32,7 @@ class Post(TimeStampedModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.user} | {self.title}'
+        return f'{self.title} | {self.user}'
 
     @property
     def comments_count(self):

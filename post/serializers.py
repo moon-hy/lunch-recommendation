@@ -12,7 +12,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
         ]
 
 class PostListSerializer(serializers.ModelSerializer):
-    user            = serializers.ReadOnlyField(source='user.username')
+    user            = serializers.ReadOnlyField(source='user.profile.nickname')
     comments_count  = serializers.ReadOnlyField()
 
     class Meta:
