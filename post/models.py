@@ -4,6 +4,13 @@ from django.contrib.auth.models import User
 from core.models import *
 
 
+class Category(models.Model):
+
+    name        = models.CharField(
+        verbose_name= 'category name',
+        max_length  = 127,
+    )
+
 class Post(TimeStampedModel):
 
     user        = models.ForeignKey(
@@ -11,6 +18,12 @@ class Post(TimeStampedModel):
         related_name= 'posts',
         verbose_name= 'user',
         on_delete   = models.CASCADE,
+    )
+
+    category    = models.ForeignKey(
+        Category,
+        verbose_name= 'category',
+        
     )
 
     title       = models.CharField(
