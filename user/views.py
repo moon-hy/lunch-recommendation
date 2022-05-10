@@ -1,6 +1,5 @@
-from tokenize import Token
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,9 +11,11 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
 )
 
-from user.models import Profile
+from user.models import Profile, Record
 from user.serializers import (
+    LikeDislikeSerializer,
     ProfileSerializer,
+    RecordListSerializer,
     UserListSerializer,
     UserDetailSerializer,
     UserRegisterSerializer,
@@ -24,7 +25,14 @@ from user.serializers import (
 User = get_user_model()
 
 class UserList(APIView):
-    permission_classes  = [AllowAny]
+    authentication_classes = (TokenAuthentication,)
+    
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            permission_classes = (AllowAny,)
+        else:
+            permission_classes = (IsAuthenticated,)
+        return [permission() for permission in permission_classes]
 
     def get(self, request):
         users    = User.objects.all()
@@ -40,8 +48,8 @@ class UserList(APIView):
 
 class UserDetail(APIView):
     serializer_class    = UserDetailSerializer
-    authentication_classes = [TokenAuthentication]
-    # permission_classes = []
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, pk):
         user        = User.objects.get(pk=pk)
@@ -70,3 +78,40 @@ class UserDetail(APIView):
         user.save()
         return Response(status=HTTP_204_NO_CONTENT)
 
+class RecordList(APIView):
+    serializer_class    = RecordListSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, pk):
+        records     = Record.objects.filter(user_id=pk)
+        serializer  = self.serializer_class(records, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    def post(self, request, pk):
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user_id=pk, food_id=request.data.get('food_id'))
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+# class LikeList(APIView):
+#     serializer_class    = LikeDislikeSerializer
+#     authentication_classes = (TokenAuthentication,)
+#     permission_classes = (IsAuthenticated, )
+
+#     def get(self, request, pk):
+#         likes       = Profile.objects.get(pk=pk).likes
+#         serializer  = self.serializer_class(likes, many=True)
+#         return Response(serializer.data, status=HTTP_200_OK)
+        
+# class DislikeList(APIView):
+#     serializer_class    = LikeDislikeSerializer
+#     authentication_classes = (TokenAuthentication,)
+#     permission_classes = (IsAuthenticated, )
+
+#     def get(self, request, pk):
+#         likes       = Profile.objects.get(pk=pk).dislikes
+#         serializer  = self.serializer_class(likes, many=True)
+#         return Response(serializer.data, status=HTTP_200_OK)
+        

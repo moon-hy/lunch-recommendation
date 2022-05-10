@@ -2,11 +2,14 @@ from django.urls import path
 
 from user.views import (
     UserDetail,
-    UserList
+    UserList,
+    
+    RecordList,
 )
 
 
 urlpatterns = [
-    path('', UserList.as_view()),
-    path('/<int:pk>', UserDetail.as_view())
+    path('/users', UserList.as_view()),
+    path('/users/<int:pk>', UserDetail.as_view()),
+    path('/users/<int:pk>/records', RecordList.as_view()),
 ]
