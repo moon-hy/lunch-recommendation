@@ -23,7 +23,7 @@ class Post(TimeStampedModel):
     category    = models.ForeignKey(
         Category,
         verbose_name= 'category',
-        
+        on_delete   = models.CASCADE
     )
 
     title       = models.CharField(
