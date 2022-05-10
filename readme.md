@@ -10,7 +10,7 @@
 # end points
 
 1. Registration
-    - POST /api/user
+    - POST /api/user/users
         - username
         - password
         - password2
@@ -27,15 +27,20 @@
 
 ---
 
-- /api/user
+- /api/user/users
     - GET: Get user list
     - POST: Register
 
-- /api/user/{int:pk}
+- /api/user/users/{int:pk}
     - GET: Get user profile
     - PUT: Update user profile
     - PATCH: Update user profile (partial) 
     - DELETE: Deactivate user
+
+- /api/user/users/{int:pk}/records
+    - GET: Get user's records
+    - POST: Add user's record
+    - DELETE: ?? Need?
 
 ---
 
@@ -44,17 +49,17 @@
 
 ---
 
-- /api/food
+- /api/food/foods
     - GET: Get food list
     - POST: Add food
 
-- /api/food/{int:pk}
+- /api/food/foods/{int:pk}
     - GET: Get food information
     - PUT: Update food information
     - PATCH: Update food information (partial)
     - DELETE: Delete food
 
-- /api/food/{int:pk}/reviews
+- /api/food/foods/{int:pk}/reviews
     - GET: Get food's reviews
     - POST: Add food's reviews
 
@@ -71,7 +76,7 @@
 
 ---
 
-- /api/post
+- /api/post/posts
     - GET: Get post list
         - Params
             - q: search title (not required)
@@ -80,19 +85,24 @@
                 - comment
     - POST: Add post
 
-- /api/post/{int:pk}
+- /api/post/posts/{int:pk}
     - GET: Get post detail
     - PUT: Update post
     - PATCH: Update post (partial)
     - DELETE: Delete post
 
-- /api/post/{int:pk}/comments
+- /api/post/posts/{int:pk}/comments
     - GET: Get post's comments
     - POST: Add post's comment
 
 - /api/post/comments/{int:pk}
     - GET: Get comment's detail
     - DELETE: Delete comment
+
+---
+
+- /api/recommendation/random-recommend
+    - GET: Get a random food
 
 
 # secrets.json
