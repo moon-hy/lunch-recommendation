@@ -13,9 +13,9 @@ from food.views import (
 
 
 urlpatterns = [
-    path('', FoodList.as_view()),
-    path('/<int:pk>', FoodDetail.as_view()),
-    path('/<int:pk>/reviews', ReviewList.as_view()),
+    path('/foods', FoodList.as_view()),
+    path('/foods/<int:pk>', FoodDetail.as_view()),
+    path('/foods/<int:pk>/reviews', ReviewList.as_view()),
     path('/reviews/<int:pk>', ReviewDetail.as_view()),
     path('/categories', CategoryList.as_view()),
     path('/categories/<int:pk>', CategoryDetail.as_view()),

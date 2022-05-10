@@ -39,10 +39,6 @@ class FoodDetail(APIView):
     def get(self, request, pk):
         food        = Food.objects.get(pk=pk)
         serializer  = self.serializer_class(food)
-        print('------------------------')
-        print(serializer)
-        print(serializer.data)
-        print('------------------------')
         return Response(serializer.data, status=HTTP_200_OK)
 
     def put(self, request, pk):
