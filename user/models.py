@@ -23,12 +23,18 @@ class Record(TimeStampedModel):
         on_delete   = models.CASCADE
     )
 
+
     class Meta:
         db_table = 'record'
         ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.food} | {self.created_at}'
+
+    @property
+    def is_reviewed(self):
+        return hasattr(self, 'review') and self.review is not None
+
 
 class Profile(models.Model):
     user        = models.OneToOneField(
