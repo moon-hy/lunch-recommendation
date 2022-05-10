@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from food.models import Food, Tag, Review
+from food.models import Category, Food, Tag, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -31,4 +31,21 @@ class FoodDetailSerializer(serializers.ModelSerializer):
         model   = Food
         fields  = [
             'id', 'name', 'detail', 'kcal', 'image', 'reviews',
+        ]
+
+class CategoryListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model   = Category
+        fields  = [
+            'id', 'name'
+        ]
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    foods       = FoodListSerializer(many=True)
+
+    class Meta:
+        model   = Category
+        fields  = [
+            'id', 'name', 'foods'
         ]

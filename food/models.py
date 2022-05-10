@@ -65,7 +65,6 @@ class Food(models.Model):
         Tag,
         related_name= 'foods',
         verbose_name= 'tags',
-        null        = True,
         blank       = True,
     )
 
@@ -123,6 +122,7 @@ class Review(TimeStampedModel):
     
     class Meta:
         db_table = 'review'
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.food.name} | {self.rating}'

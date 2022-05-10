@@ -10,8 +10,8 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST
 )
 
-from food.serializers import FoodListSerializer, FoodDetailSerializer, ReviewSerializer
-from food.models import Food, Review
+from food.serializers import CategoryDetailSerializer, CategoryListSerializer, FoodListSerializer, FoodDetailSerializer, ReviewSerializer
+from food.models import Category, Food, Review
 
 
 class FoodList(APIView):
@@ -97,3 +97,30 @@ class ReviewDetail(APIView):
         review       = Review.objects.get(pk=pk)
         review.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+class CategoryList(APIView):
+    serializer_class    = CategoryListSerializer
+    permission_classes  = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request):
+        categories  = Category.objects.all()
+        serializer  = self.serializer_class(categories, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+    
+    def post(self, request):
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class CategoryDetail(APIView):
+    serializer_class    = CategoryDetailSerializer
+    permission_classes  = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request, pk):
+        category    = Category.objects.get(pk=pk)
+        serializer  = self.serializer_class(category)
+        return Response(serializer.data, status=HTTP_200_OK)

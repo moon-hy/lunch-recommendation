@@ -9,65 +9,90 @@
 
 # end points
 
+1. Registration
+    - POST /api/user
+        - username
+        - password
+        - password2
+        - nickname
+        - email
+
+2. Get Token
+    - POST /api/auth/token
+        - username
+        - password
+
+3. Header
+    - "Authorization": "Token {Token}"
+
+---
+
 - /api/user
-    - GET
-    - POST
+    - GET: Get user list
+    - POST: Register
 
 - /api/user/{int:pk}
-    - GET
-    - PUT
-    - PATCH
-    - DELETE
+    - GET: Get user profile
+    - PUT: Update user profile
+    - PATCH: Update user profile (partial) 
+    - DELETE: Deactivate user
 
 ---
 
 - /api/auth/token
-    - POST
+    - POST: Get token
 
 ---
 
 - /api/food
-    - GET
-    - POST
+    - GET: Get food list
+    - POST: Add food
 
 - /api/food/{int:pk}
-    - GET
-    - PUT
-    - PATCH
-    - DELETE
+    - GET: Get food information
+    - PUT: Update food information
+    - PATCH: Update food information (partial)
+    - DELETE: Delete food
 
 - /api/food/{int:pk}/reviews
-    - GET
-    - POST
+    - GET: Get food's reviews
+    - POST: Add food's reviews
 
-- /api/food/reviews{int:pk}
-    - GET
-    - DELETE
+- /api/food/reviews/{int:pk}
+    - GET: Get review detail
+    - DELETE: Delete review
+
+- /api/food/categories
+    - GET: Get category list
+    - POST: Add category
+
+- /api/food/categories/{int:pk}
+    - GET: Get specific category's information (ex. related food)
 
 ---
 
 - /api/post
-    - GET
-    - POST
-    - Params
-        - q: search title (not required)
-        - u: search username (not required)
-        - s: sort by (not required)
-            - comment
+    - GET: Get post list
+        - Params
+            - q: search title (not required)
+            - u: search username (not required)
+            - s: sort by (not required)
+                - comment
+    - POST: Add post
 
 - /api/post/{int:pk}
-    - GET
-    - PUT
-    - PATCH
-    - DELETE
+    - GET: Get post detail
+    - PUT: Update post
+    - PATCH: Update post (partial)
+    - DELETE: Delete post
 
 - /api/post/{int:pk}/comments
-    - GET
-    - POST
+    - GET: Get post's comments
+    - POST: Add post's comment
 
 - /api/post/comments/{int:pk}
-    - GET
-    - DELETE
+    - GET: Get comment's detail
+    - DELETE: Delete comment
 
 
 # secrets.json
