@@ -6,23 +6,6 @@ from django.db.models.functions import Coalesce
 from core.models import TimeStampedModel
 
 
-class Tag(models.Model):
-
-    name        = models.CharField(
-        verbose_name= 'tag name',
-        max_length  = 255
-    )
-
-    detail      = models.TextField(
-        verbose_name= 'tag detail'
-    )
-
-    class Meta:
-        db_table = 'tag'
-
-    def __str__(self):
-        return self.name
-
 class Category(models.Model):
 
     name        = models.CharField(
@@ -30,10 +13,24 @@ class Category(models.Model):
         max_length  = 255
     )
 
+    class Meta:
+        db_table = 'feature_category'
+        ordering = ['name']
+
     def __str__(self):
         return self.name
+    @property
+    def count_foods(self):
+        return self.foods.count()
 
 class Food(models.Model):
+
+    category    = models.ForeignKey(
+        Category,
+        related_name= 'foods',
+        verbose_name= 'category',
+        on_delete   = models.CASCADE
+    )
 
     name        = models.CharField(
         verbose_name= 'food name',
@@ -42,13 +39,6 @@ class Food(models.Model):
 
     detail      = models.TextField(
         verbose_name= 'food detail'
-    )
-
-    category    = models.ForeignKey(
-        Category,
-        related_name= 'foods',
-        verbose_name= 'category',
-        on_delete   = models.CASCADE
     )
 
     kcal        = models.IntegerField(
@@ -63,22 +53,20 @@ class Food(models.Model):
         null        = True,
     )
 
-    tags        = models.ManyToManyField(
-        Tag,
-        related_name= 'foods',
-        verbose_name= 'tags',
-        blank       = True,
-    )
-
     class Meta:
-        db_table = 'food'
+        db_table = 'feature_food'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
     @property
+    def reviews(self):
+        return Review.objects.filter(history__food=self)
+
+    @property
     def rating_avg(self):
-        return Review.objects.filter(food=self).aggregate(
+        return self.reviews.aggregate(
                 avg=Coalesce(
                     models.Avg('rating'), 
                     0, 
@@ -92,12 +80,39 @@ class Food(models.Model):
     def reviews_count(self):
         return self.reviews.count()
 
+class History(TimeStampedModel):
+
+    food        = models.ForeignKey(
+        Food,
+        related_name= 'histories',
+        verbose_name= 'food',
+        on_delete   = models.CASCADE
+    )
+
+    user        = models.ForeignKey(
+        User,
+        related_name= 'histories',
+        verbose_name= 'user',
+        on_delete   = models.CASCADE
+    )
+
+    class Meta:
+        db_table = 'feature_history'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f'{self.user.profile.nickname} | {self.food} | {self.created_at}'
+
+    @property
+    def is_reviewed(self):
+        return hasattr(self, 'review') and self.review is not None
+
 class Review(TimeStampedModel):
     
-    record      = models.OneToOneField(
-        'user.Record',
+    history      = models.OneToOneField(
+        History,
         related_name= 'review',
-        verbose_name= 'record',
+        verbose_name= 'history',
         on_delete   = models.CASCADE
     )
 
@@ -116,8 +131,8 @@ class Review(TimeStampedModel):
     )
     
     class Meta:
-        db_table = 'review'
+        db_table = 'feature_review'
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.food.name} | {self.rating}'
+        return f'{self.history.food.name} | {self.rating}'

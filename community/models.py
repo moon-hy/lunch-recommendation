@@ -41,7 +41,7 @@ class Post(TimeStampedModel):
     )
 
     class Meta:
-        db_table = 'posts'
+        db_table = 'community_post'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -74,7 +74,7 @@ class Comment(TimeStampedModel):
     )
 
     class Meta:
-        db_table = 'comments'
+        db_table = 'community_comment'
         ordering = ['-created_at']
     
     def __str__(self):

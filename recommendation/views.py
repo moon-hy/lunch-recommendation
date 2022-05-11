@@ -12,15 +12,22 @@ from rest_framework.status import (
 
     HTTP_400_BAD_REQUEST,
 )
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
-from food.models import Food
-from food.serializers import FoodDetailSerializer, FoodListSerializer
+from feature.models import Food
+from feature.serializers import FoodDetailSerializer, FoodListSerializer
 
 class RandomRecommend(APIView):
     serializer_class    = FoodDetailSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated, )
 
+    @swagger_auto_schema(   
+        operation_id            = '음식 랜덤 추천',
+        operation_description   = '랜덤으로 음식을 추천합니다.',
+        responses               = {200: openapi.Response('', FoodDetailSerializer)}
+    )
     def get(self, request):
         foods       = Food.objects.all()
         counts_foods= foods.count()

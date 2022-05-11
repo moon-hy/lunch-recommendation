@@ -3,37 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from core.models import TimeStampedModel
-from food.models import Food
-
-
-class Record(TimeStampedModel):
-
-    user        = models.ForeignKey(
-        User,
-        related_name= 'records',
-        verbose_name= 'user',
-        on_delete   = models.CASCADE
-    )
-
-    food        = models.ForeignKey(
-        Food,
-        related_name= 'records',
-        verbose_name= 'food',
-        on_delete   = models.CASCADE
-    )
-
-
-    class Meta:
-        db_table = 'record'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f'{self.food} | {self.created_at}'
-
-    @property
-    def is_reviewed(self):
-        return hasattr(self, 'review') and self.review is not None
+from feature.models import Food
 
 
 class Profile(models.Model):

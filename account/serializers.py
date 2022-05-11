@@ -3,8 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 
-from user.models import Profile, Record
-from food.models import Food
+from account.models import Profile
 
 
 class LikeDislikeSerializer(serializers.Serializer):
@@ -13,20 +12,6 @@ class LikeDislikeSerializer(serializers.Serializer):
             'id'    : instance.id,
             'name'  : instance.name
         }
-
-class RecordListSerializer(serializers.ModelSerializer):
-    food        = serializers.ReadOnlyField(source='food.name')
-    food_id     = serializers.PrimaryKeyRelatedField(
-        queryset    = Food.objects.all(),
-        write_only  = True,
-        required    = True
-    )
-
-    class Meta:
-        model   = Record
-        fields  = [
-            'id', 'food', 'created_at', 'food_id'
-        ]
 
 class ProfileSerializer(serializers.ModelSerializer):
     likes       = LikeDislikeSerializer('likes', many=True)
