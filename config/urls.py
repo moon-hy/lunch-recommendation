@@ -19,7 +19,6 @@ schema_view_v1 = get_schema_view(
         default_version='v1',
         description="NYOM Open API Docs",
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="email@email.com"),
         license=openapi.License(name="License"),
     ),
     validators=['flex'], #'ssv'],
