@@ -1,5 +1,9 @@
+import re
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 
@@ -44,9 +48,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
         ]
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    email   = serializers.EmailField(
+    user_id     = serializers.CharField(
+        source      = 'username',
+        write_only  = True,
         required    = True,
-        validators  = [UniqueValidator(queryset=User.objects.all())]
+        validators  = [
+            UniqueValidator(queryset=User.objects.all()),
+            RegexValidator(regex=r"^[\w.]+\Z")
+        ]
     )
     nickname    = serializers.CharField(
         write_only  = True,
@@ -65,19 +74,17 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model   = User
         fields  = [
-            'username', 'nickname', 'password', 'password2', 'email',
+            'user_id', 'nickname', 'password', 'password2'
         ]
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-
+            raise serializers.ValidationError({'password': "Password fields didn't match."})
         return attrs
 
     def create(self, validated_data):
         user = User.objects.create(
             username    = validated_data['username'],
-            email       = validated_data['email'],
         )
         user.profile.nickname = validated_data['nickname']
 
