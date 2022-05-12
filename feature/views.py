@@ -17,35 +17,36 @@ from feature.serializers import (
     CategoryListSerializer, 
     FoodListSerializer, 
     FoodDetailSerializer,
-    HistoryListSerializer,
-    ReviewCreateSerializer, 
+    HistorySerializer,
     ReviewSerializer
 )
 from feature.models import Category, Food, History, Review
 from core.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 
+
 class FoodList(APIView):
+    serializer_class    = FoodListSerializer
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
 
     @swagger_auto_schema(
         operation_id            = '음식 목록 조회',
         operation_description   = '음식 목록을 조회합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         foods       = Food.objects.all()
-        serializer  = FoodListSerializer(foods, many=True)
+        serializer  = self.serializer_class(foods, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   
         operation_id            = '음식 목록 추가',
         operation_description   = '음식 목록에 데이터를 추가합니다.',
         request_body            = FoodListSerializer,
-        responses               = {201: openapi.Response('', FoodListSerializer)}
+        responses               = {201: openapi.Response('', serializer_class)}
     )
     def post(self, request):
-        serializer  = FoodListSerializer(data=request.data)
+        serializer  = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
@@ -59,31 +60,18 @@ class FoodDetail(APIView):
     @swagger_auto_schema(
         operation_id            = '음식 정보 조회',
         operation_description   = '음식 정보를 조회합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request, pk):
         food        = Food.objects.get(pk=pk)
-        serializer  = FoodDetailSerializer(food)
-        return Response(serializer.data, status=HTTP_200_OK)
-
-    @swagger_auto_schema(   
-        operation_id            = '기록 추가',
-        operation_description   = '음식 선택 기록을 추가합니다.',
-        responses               = {201: openapi.Response('', HistoryListSerializer)}
-    )
-    def post(self, request, pk):
-        history     = History.objects.create(
-            user    = request.user,
-            food_id = pk,
-        )
-        serializer  = HistoryListSerializer(history)
+        serializer  = self.serializer_class(food)
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   
         operation_id            = '음식 정보 수정',
         operation_description   = '음식 정보를 수정합니다.',
-        request_body            = FoodListSerializer,
-        responses               = {200: openapi.Response('', FoodDetailSerializer)}
+        request_body            = serializer_class,
+        responses               = {200: openapi.Response('', serializer_class)}
     )   
     def put(self, request, pk):
         food        = Food.objects.get(pk=pk)
@@ -96,8 +84,8 @@ class FoodDetail(APIView):
     @swagger_auto_schema(   
         operation_id            = '음식 정보 수정',
         operation_description   = '음식 정보를 수정합니다.',
-        request_body            = FoodListSerializer,
-        responses               = {200: openapi.Response('', FoodDetailSerializer)}
+        request_body            = serializer_class,
+        responses               = {200: openapi.Response('', serializer_class)}
     )
     def patch(self, request, pk):
         food        = Food.objects.get(pk=pk)
@@ -118,20 +106,34 @@ class FoodDetail(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 class HistoryList(APIView):
+    serializer_class    = HistorySerializer
     permission_classes  = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     @swagger_auto_schema(
         operation_id            = '기록 조회',
         operation_description   = '나의 음식 선택 기록을 조회합니다.',
-        responses               = {200: openapi.Response('', HistoryListSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         histories   = History.objects.filter(user=request.user)
-        serializer  = HistoryListSerializer(histories, many=True)
+        serializer  = self.serializer_class(histories, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
+    @swagger_auto_schema(   
+        operation_id            = '기록 추가',
+        operation_description   = '음식 선택 기록을 추가합니다.',
+        responses               = {201: openapi.Response('', serializer_class)}
+    )
+    def post(self, request):
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 class HistoryDetail(APIView):
+    serializer_class    = ReviewSerializer
     permission_classes  = (IsAuthenticated, IsOwnerOrReadOnly,)
     authentication_classes = (TokenAuthentication,)
     
@@ -143,34 +145,14 @@ class HistoryDetail(APIView):
     @swagger_auto_schema(   
         operation_id            = '기록 리뷰 조회',
         operation_description   = '해당 기록의 리뷰를 조회합니다.',
-        responses               = {201: openapi.Response('', ReviewSerializer)}
+        responses               = {201: openapi.Response('', serializer_class)}
     )
     def get(self, request, pk):
         history     = self.get_object(request, pk)
-        serializer  = ReviewSerializer(history.review)
+        serializer  = self.serializer_class(history.review)
         return Response(serializer.data, status=HTTP_200_OK)
 
-    @swagger_auto_schema(   
-        operation_id            = '리뷰 등록',
-        operation_description   = '리뷰를 등록합니다.',
-        request_body            = ReviewCreateSerializer,
-        responses               = {201: openapi.Response('', ReviewCreateSerializer)}
-    )
-    def post(self, request, pk):
-        history     = self.get_object(request, pk)
-        
-        if history.is_reviewed:
-            return Response({
-                'detail': 'Already reviewed.'
-            }, status=HTTP_400_BAD_REQUEST)
-
-        serializer  = ReviewCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(history=history)
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-class ReviewList(APIView):
+class FoodReviewList(APIView):
     serializer_class    = ReviewSerializer
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
@@ -178,15 +160,42 @@ class ReviewList(APIView):
     @swagger_auto_schema(
         operation_id            = '음식 리뷰 조회',
         operation_description   = '특정 음식의 리뷰를 조회합니다.',
-        responses               = {200: openapi.Response('', ReviewSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request, pk):
         reviews     = Review.objects.filter(history__food_id=pk)
         serializer  = self.serializer_class(reviews, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
-class ReviewDetail(APIView):
+class ReviewList(APIView):
     serializer_class    = ReviewSerializer
+    permission_classes  = (IsAuthenticated, )
+    authentication_classes = (TokenAuthentication,)
+
+    @swagger_auto_schema(
+        operation_id            = '리뷰 조회',
+        operation_description   = '모든 리뷰를 조회합니다.',
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
+    )
+    def get(self, request):
+        reviews     = Review.objects.all()
+        serializer  = self.serializer_class(reviews, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    @swagger_auto_schema(   
+        operation_id            = '리뷰 등록',
+        operation_description   = '리뷰를 등록합니다.',
+        request_body            = serializer_class,
+        responses               = {201: openapi.Response('', serializer_class)}
+    )
+    def post(self, request):
+        serializer  = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class ReviewDetail(APIView):
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
 
@@ -213,7 +222,7 @@ class CategoryList(APIView):
     @swagger_auto_schema(
         operation_id            = '카테고리 조회',
         operation_description   = '음식의 카테고리 목록을 조회합니다.',
-        responses               = {200: openapi.Response('', CategoryListSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         categories  = Category.objects.all()
@@ -223,8 +232,8 @@ class CategoryList(APIView):
     @swagger_auto_schema(
         operation_id            = '카테고리 추가',
         operation_description   = '음식의 카테고리를 목록에 추가합니다.',
-        request_body            = CategoryListSerializer,
-        responses               = {201: openapi.Response('', CategoryListSerializer(many=True))}
+        request_body            = serializer_class,
+        responses               = {201: openapi.Response('', serializer_class(many=True))}
     )
     def post(self, request):
         serializer  = self.serializer_class(data=request.data)
@@ -241,7 +250,7 @@ class CategoryDetail(APIView):
     @swagger_auto_schema(
         operation_id            = '카테고리 상세 조회',
         operation_description   = '음식의 카테고리를 조회합니다.',
-        responses               = {200: openapi.Response('', CategoryDetailSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request, pk):
         category    = Category.objects.get(pk=pk)

@@ -4,30 +4,34 @@ from feature.models import Category, Food, History, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    history_id      = serializers.PrimaryKeyRelatedField(
+        queryset    = History.objects.all(),
+        source      = 'history',
+    )
+    review_id       = serializers.ReadOnlyField(source='id')
     nickname        = serializers.ReadOnlyField(source='user.profile.nickname')
+    food_id         = serializers.ReadOnlyField(source='food.id')
     food_name       = serializers.ReadOnlyField(source='history.food.name')
 
     class Meta:
         model   = Review
         fields  = [
-            'id', 'nickname', 'food_name', 'content', 'rating', 'created_at' 
-        ]
-
-class ReviewCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model   = Review
-        fields  = [
-            'id', 'rating', 'content', 'created_at' 
+            'history_id', 'review_id', 'nickname', 'food_id', 'food_name', 'content', 'rating', 'created_at' 
         ]
         extra_kwargs = {
-            'rating': {'required': True},
-            'content': {'required': False},
+            'history_id': {'reuiqred': True},
+            'rating'    : {'required': True},
+            'content'   : {'required': False},
         }
 
     def validate(self, attrs):
+        if attrs['history'].is_reviewed:
+            raise serializers.ValidationError({'detail': 'Already reviewed.'})
+        if attrs['history'].user != self.context['request'].user:
+            raise serializers.ValidationError({'detail': 'No Permission.'})
         if not (0 <= attrs['rating'] <= 5):
-            raise serializers.ValidationError('Invalid rating.')
+            raise serializers.ValidationError({'detail': 'Invalid rating.'})
+
         return attrs
 
 class FoodListSerializer(serializers.ModelSerializer):
@@ -83,9 +87,12 @@ class FoodDetailSerializer(serializers.ModelSerializer):
             'detail', 'kcal', 'image', 'reviews', 'rating_avg'
         ]
 
-class HistoryListSerializer(serializers.ModelSerializer):
+class HistorySerializer(serializers.ModelSerializer):
     history_id  = serializers.ReadOnlyField(source='id')
-    food_id     = serializers.ReadOnlyField(source='food.id')
+    food_id     = serializers.PrimaryKeyRelatedField(
+        queryset        = Food.objects.all(),
+        source          = 'food',
+    )
     food_name   = serializers.ReadOnlyField(source='food.name')
 
     class Meta:
@@ -93,6 +100,9 @@ class HistoryListSerializer(serializers.ModelSerializer):
         fields  = [
             'history_id', 'food_id', 'food_name', 'created_at', 'is_reviewed'
         ]
+        extra_kwargs= {
+            'food_id'   : {'required': True}
+        }
 
 class CategoryListSerializer(serializers.ModelSerializer):
     category_id = serializers.ReadOnlyField(source='id')
