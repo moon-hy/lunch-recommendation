@@ -15,7 +15,7 @@ from drf_yasg import openapi
 
 from community.serializers import (
     CategorySerializer,
-    CommentCreateSerializer,
+    CommentSerializer,
     PostListSerializer,
     PostDetailSerializer
 )
@@ -30,7 +30,7 @@ class PostList(APIView):
     @swagger_auto_schema(   
         operation_id            = '게시글 목록 조회',
         operation_description   = '게시글 목록을 조회합니다.',
-        responses               = {200: openapi.Response('', PostListSerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         posts       = Post.objects.all()
@@ -56,18 +56,18 @@ class PostList(APIView):
     @swagger_auto_schema(   
         operation_id            = '게시글 등록',
         operation_description   = '게시글을 등록합니다.',
-        request_body            = PostListSerializer,
-        responses               = {201: openapi.Response('', PostListSerializer)}
+        request_body            = serializer_class,
+        responses               = {201: openapi.Response('', serializer_class)}
     )
     def post(self, request):
-        serializer  = PostListSerializer(data=request.data)
+        serializer  = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class PostDetail(APIView):
-    serialzer_class     = PostDetailSerializer
+    serializer_class     = PostDetailSerializer
     permission_classes  = (IsAuthenticated, IsOwnerOrReadOnly,)
     authentication_classes = (TokenAuthentication,)
 
@@ -79,35 +79,22 @@ class PostDetail(APIView):
     @swagger_auto_schema(   
         operation_id            = '게시글 조회',
         operation_description   = '게시글을 조회합니다.',
-        responses               = {200: openapi.Response('', PostDetailSerializer)}
+        responses               = {200: openapi.Response('', serializer_class)}
     )
     def get(self, request, pk):
         post        = self.get_object(request, pk)
-        serializer  = self.serialzer_class(post)
+        serializer  = self.serializer_class(post)
         return Response(serializer.data, status=HTTP_200_OK)
-
-    @swagger_auto_schema(   
-        operation_id            = '댓글 등록',
-        operation_description   = '게시글에 댓글을 등록합니다.',
-        request_body            = CommentCreateSerializer,
-        responses               = {201: openapi.Response('', CommentCreateSerializer)}
-    )
-    def post(self, request, pk):
-        serializer  = CommentCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user, post_id=pk)
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(   
         operation_id            = '게시글 수정',
         operation_description   = '게시글을 수정합니다.',
-        request_body            = PostDetailSerializer,
-        responses               = {200: openapi.Response('', PostDetailSerializer)}
+        request_body            = serializer_class,
+        responses               = {200: openapi.Response('', serializer_class)}
     )
     def put(self, request, pk):
         post        = self.get_object(request, pk)
-        serializer  = self.serialzer_class(post, data=request.data)
+        serializer  = self.serializer_class(post, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)
@@ -145,7 +132,7 @@ class CategoryList(APIView):
     @swagger_auto_schema(   
         operation_id            = '카테고리 목록 조회',
         operation_description   = '카테고리 목록을 조회합니다.',
-        responses               = {200: openapi.Response('', CategorySerializer(many=True))}
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         categories      = Category.objects.all()
@@ -155,8 +142,8 @@ class CategoryList(APIView):
     @swagger_auto_schema(   
         operation_id            = '카테고리 추가',
         operation_description   = '게시글 카테고리 목록을 추가합니다.',
-        request_body            = CategorySerializer,
-        responses               = {200: openapi.Response('', CategorySerializer)}
+        request_body            = serializer_class,
+        responses               = {200: openapi.Response('', serializer_class)}
     )
     def post(self, request):
         serializer      = self.serializer_class(data=request.data)
@@ -168,6 +155,24 @@ class CategoryList(APIView):
 class CategoryDetail(APIView):
     pass
 
+class CommentList(APIView):
+    serializer_class    = CommentSerializer
+    permission_classes  = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    @swagger_auto_schema(   
+        operation_id            = '댓글 등록',
+        operation_description   = '게시글에 댓글을 등록합니다.',
+        request_body            = serializer_class,
+        responses               = {201: openapi.Response('', serializer_class)}
+    )
+    def post(self, request):
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 class CommentDelete(APIView):
     permission_classes  = (IsAuthenticated, IsOwnerOrReadOnly,)
     authentication_classes = (TokenAuthentication,)
@@ -176,6 +181,7 @@ class CommentDelete(APIView):
         comment         = Comment.objects.get(pk=pk)
         self.check_object_permissions(self.request, comment)
         return comment
+
 
     @swagger_auto_schema(   
         operation_id            = '댓글 삭제',

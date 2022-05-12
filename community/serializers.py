@@ -12,23 +12,29 @@ class CategorySerializer(serializers.ModelSerializer):
         ]
 
 class CommentSerializer(serializers.ModelSerializer):
+    post_id         = serializers.PrimaryKeyRelatedField(
+        queryset    = Post.objects.all(),
+        source      = 'post',
+    )
+
+    comment_id         = serializers.ReadOnlyField(
+        source      = 'id',
+    )
+
+    nickname        = serializers.ReadOnlyField(
+        source      = 'user.profile.nickname'
+    )
 
     class Meta:
         model       = Comment
         fields      = [
-            'id', 'user', 'content', 'created_at'
-        ]
-
-class CommentCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model       = Comment
-        fields      = [
-            'content'
+            'post_id', 'comment_id', 
+            'nickname', 'content', 'created_at'
         ]
         extra_kwargs= {
-            'post'      : {'required': False},
-            'content'   : {'required': True}
+            'created_at': {'read_only': True},
+            'post_id'   : {'required': True, 'write_only': True},
+            'content'   : {'required': True},
         }
 
 class PostListSerializer(serializers.ModelSerializer):
@@ -51,19 +57,6 @@ class PostListSerializer(serializers.ModelSerializer):
             'title'     : {'required': True, 'write_only': True},
             'category'  : {'required': True, 'write_only': True},
             'content'   : {'required': True, 'write_only': True}
-        }
-
-class PostCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model       = Post
-        fields      = [
-            'category', 'title', 'content',
-        ]
-        extra_kwargs= {
-            'title'     : {'required': True},
-            'category'  : {'required': True},
-            'content'   : {'required': True}
         }
 
 class PostDetailSerializer(serializers.ModelSerializer):
