@@ -213,7 +213,7 @@ class Like(APIView):
         operation_description   = '사용자 정보에 선호 음식을 추가합니다.',
         responses               = {204: openapi.Response('No Content')}
     )
-    def post(self, request, pk):
+    def put(self, request, pk):
         likes       = request.user.profile.likes
         dislikes    = request.user.profile.dislikes
         food        = Food.objects.get(pk=pk)
@@ -245,7 +245,7 @@ class Dislike(APIView):
         operation_description   = '사용자 정보에 선호 음식을 추가합니다.',
         responses               = {204: openapi.Response('No Content')}
     )
-    def post(self, request, pk):
+    def put(self, request, pk):
         dislikes    = request.user.profile.dislikes
         food        = Food.objects.get(pk=pk)
         dislikes.add(food)
