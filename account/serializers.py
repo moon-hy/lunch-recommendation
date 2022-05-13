@@ -13,8 +13,8 @@ from account.models import Profile
 class LikeDislikeSerializer(serializers.Serializer):
     def to_representation(self, instance):
         return {
-            'id'    : instance.id,
-            'name'  : instance.name
+            'food_id'    : instance.id,
+            'food_name'  : instance.name
         }
 
 class ProfileSerializer(serializers.ModelSerializer):
