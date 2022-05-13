@@ -29,22 +29,25 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     profile     = ProfileSerializer('profile')
+    pk          = serializers.ReadOnlyField(source='id')
+    user_id     = serializers.ReadOnlyField(source='username')
 
     class Meta:
         model   = User
         fields  = [
-            'id', 'username', 'email', 'profile'
+            'pk', 'user_id', 'email', 'profile'
         ]
 
 class UserDetailSerializer(serializers.ModelSerializer):
     profile     = ProfileSerializer('profile')
-    username    = serializers.ReadOnlyField()
+    pk          = serializers.ReadOnlyField(source='id')
+    user_id     = serializers.ReadOnlyField(source='username')
     email       = serializers.ReadOnlyField()
 
     class Meta:
         model   = User
         fields = [
-            'id', 'username', 'email', 'profile'
+            'pk', 'user_id', 'email', 'profile'
         ]
 
 class UserRegisterSerializer(serializers.ModelSerializer):
