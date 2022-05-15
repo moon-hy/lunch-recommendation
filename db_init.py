@@ -2,6 +2,7 @@ import csv
 import os
 
 import django
+from django.core.files.images import ImageFile
 import pandas as pd
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -25,15 +26,24 @@ def insert_category():
     Category.objects.bulk_create(categories)
     print('DONE: Insert Category data.')
 
+IMAGE_PATH = './data/images/'
 def insert_food():
     foods = []
     with open(CSV_PATH+'foods.csv', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            name            = row['menu']
+            kcal            = row['kcal']
+            try:
+                image       = ImageFile(open(IMAGE_PATH+name+'.png', 'rb'))
+            except:
+                image       = ''
             category        = Category.objects.get(name=row['category'])
             if not Food.objects.filter(name=row['menu']).exists():
                 foods.append(Food(
-                    name    = row['menu'],
+                    name    = name,
+                    kcal    = kcal,
+                    image   = image,
                     category= category
                 ))
     Food.objects.bulk_create(foods)

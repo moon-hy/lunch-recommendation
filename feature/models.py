@@ -24,6 +24,15 @@ class Category(models.Model):
     def count_foods(self):
         return self.foods.count()
 
+def upload_func(instance, filename):
+    ext     = filename.split('.')[-1]
+    name    = filename.split('/')[-1].split('.')[0]
+
+    if instance.pk:
+        return 'images/food/{}.{}'.format(instance.pk, ext)
+    else:
+        return 'images/food/{}.{}'.format(name ,ext)
+
 class Food(models.Model):
 
     category    = models.ForeignKey(
@@ -42,14 +51,16 @@ class Food(models.Model):
         verbose_name= 'food detail'
     )
 
-    kcal        = models.IntegerField(
+    kcal        = models.DecimalField(
+        max_digits  = 10,
+        decimal_places= 2,
         verbose_name= 'kcal',
         default     = 0
     )
 
     image       = models.ImageField(
         verbose_name= 'image',
-        upload_to   = 'food/images/',
+        upload_to   = upload_func,
         blank       = True,
         null        = True,
     )
@@ -59,7 +70,7 @@ class Food(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return self.name
+        return f'{self.category.name} | {self.name}'
 
     @property
     def reviews(self):
