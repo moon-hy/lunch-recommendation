@@ -35,7 +35,7 @@ class FoodList(APIView):
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
-        foods       = Food.objects.all()
+        foods       = Food.objects.all().select_related('category').prefetch_related('histories')
         serializer  = self.serializer_class(foods, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
