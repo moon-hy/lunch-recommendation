@@ -1,6 +1,8 @@
 # init
 
 0. pip install django djangorestframework django-cors-headers drf-yasg flex Pillow mysqlclient
+0. python process_data.py
+0. python db_init.py
 1. python manage.py makemigrations
 2. python manage.py migrate
 3. python manage.py createsuperuser
