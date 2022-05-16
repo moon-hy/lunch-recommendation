@@ -9,6 +9,7 @@ from feature.models import Food
 class Profile(models.Model):
     user        = models.OneToOneField(
         User,
+        primary_key = True,
         related_name= 'profile',
         verbose_name= 'user',
         on_delete   = models.CASCADE

@@ -18,6 +18,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class CustomModelManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'user', 'user__profile', 'category',
+        ).prefetch_related(
+            'comments', 'comments__user',
+        ).annotate(
+            comments_count=models.Count('comments')
+        )
+
 class Post(TimeStampedModel):
 
     user        = models.ForeignKey(
@@ -47,6 +57,8 @@ class Post(TimeStampedModel):
         default     = 0
     )
 
+    objects     = CustomModelManager()
+
     class Meta:
         db_table = 'community_post'
         ordering = ['-created_at']
@@ -54,9 +66,9 @@ class Post(TimeStampedModel):
     def __str__(self):
         return f'{self.title} | {self.user}'
 
-    @property
-    def comments_count(self):
-        return self.comments.count()
+    # @property
+    # def comments_count(self):
+    #     return self.comments.count()
 
     
 class Comment(TimeStampedModel):

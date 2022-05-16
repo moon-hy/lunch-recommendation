@@ -17,7 +17,7 @@ class CommentSerializer(serializers.ModelSerializer):
         source      = 'post',
     )
 
-    comment_id         = serializers.ReadOnlyField(
+    comment_id      = serializers.ReadOnlyField(
         source      = 'id',
     )
 
@@ -60,11 +60,13 @@ class PostListSerializer(serializers.ModelSerializer):
         }
 
 class PostDetailSerializer(serializers.ModelSerializer):
+    post_id         = serializers.ReadOnlyField(source='id')
+    user_id         = serializers.ReadOnlyField(source='user.id')
     nickname        = serializers.ReadOnlyField(source='user.profile.nickname')
     comments        = CommentSerializer('comments', many=True)
 
     class Meta:
         model       = Post
         fields      = [
-            'id', 'user', 'nickname', 'title', 'content', 'created_at', 'comments'
+            'post_id', 'user_id', 'nickname', 'title', 'content', 'created_at', 'comments'
         ]
