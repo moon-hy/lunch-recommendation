@@ -6,6 +6,12 @@ from django.db.models.functions import Coalesce
 from core.models import TimeStampedModel
 
 
+class CategoryModelManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            foods_count=models.Count('foods')
+        )
+
 class Category(models.Model):
 
     name        = models.CharField(
@@ -14,15 +20,18 @@ class Category(models.Model):
         unique      = True,
     )
 
+    objects     = CategoryModelManager()
+
     class Meta:
         db_table = 'feature_category'
         ordering = ['name']
 
     def __str__(self):
         return self.name
-    @property
-    def count_foods(self):
-        return self.foods.count()
+        
+    # @property
+    # def count_foods(self):
+    #     return self.foods.count()
 
 def upload_func(instance, filename):
     ext     = filename.split('.')[-1]
@@ -33,7 +42,7 @@ def upload_func(instance, filename):
     else:
         return 'images/food/{}.{}'.format(name ,ext)
 
-class CustomModelManager(models.Manager):
+class FoodModelManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related(
             'category'
@@ -51,7 +60,6 @@ class CustomModelManager(models.Manager):
         ).annotate(
             reviews_count=models.Count('histories__review')
         )
-
 
 class Food(models.Model):
 
@@ -85,7 +93,7 @@ class Food(models.Model):
         null        = True,
     )
 
-    objects     = CustomModelManager()
+    objects     = FoodModelManager()
 
     class Meta:
         db_table = 'feature_food'
@@ -141,6 +149,12 @@ class History(TimeStampedModel):
     def is_reviewed(self):
         return hasattr(self, 'review') and self.review is not None
 
+class ReviewModelManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'history', 'history__food', 'history__user__profile'
+        )
+
 class Review(TimeStampedModel):
     
     history      = models.OneToOneField(
@@ -163,6 +177,8 @@ class Review(TimeStampedModel):
         verbose_name= 'content',
         max_length  = 255,
     )
+
+    objects     = ReviewModelManager()
     
     class Meta:
         db_table = 'feature_review'

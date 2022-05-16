@@ -9,7 +9,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         source      = 'history',
     )
     review_id       = serializers.ReadOnlyField(source='id')
-    nickname        = serializers.ReadOnlyField(source='user.profile.nickname')
+    nickname        = serializers.ReadOnlyField(source='history.user.profile.nickname')
     food_id         = serializers.ReadOnlyField(source='food.id')
     food_name       = serializers.ReadOnlyField(source='history.food.name')
 
@@ -107,12 +107,12 @@ class HistorySerializer(serializers.ModelSerializer):
 class CategoryListSerializer(serializers.ModelSerializer):
     category_id = serializers.ReadOnlyField(source='id')
     category_name = serializers.ReadOnlyField(source='name')
-    category_count_foods = serializers.ReadOnlyField(source='count_foods')
+    foods_count = serializers.ReadOnlyField()
 
     class Meta:
         model   = Category
         fields  = [
-            'category_id', 'category_name', 'category_count_foods', 'name',
+            'category_id', 'category_name', 'foods_count', 'name',
         ]
         extra_kwargs= {
             'name': {'write_only': True}
