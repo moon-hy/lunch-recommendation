@@ -33,6 +33,26 @@ def upload_func(instance, filename):
     else:
         return 'images/food/{}.{}'.format(name ,ext)
 
+class CustomModelManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'category'
+        ).prefetch_related(
+            'histories', 'histories__review'
+        ).annotate(
+            rating_avg=Coalesce(
+                models.Avg('histories__review__rating'),
+                0, 
+                output_field=models.DecimalField(
+                    max_digits      =4,
+                    decimal_places  =2
+                )
+            ),
+        ).annotate(
+            reviews_count=models.Count('histories__review')
+        )
+
+
 class Food(models.Model):
 
     category    = models.ForeignKey(
@@ -65,6 +85,8 @@ class Food(models.Model):
         null        = True,
     )
 
+    objects     = CustomModelManager()
+
     class Meta:
         db_table = 'feature_food'
         ordering = ['name']
@@ -76,21 +98,21 @@ class Food(models.Model):
     def reviews(self):
         return Review.objects.filter(history__food=self)
 
-    @property
-    def rating_avg(self):
-        return self.reviews.aggregate(
-                avg=Coalesce(
-                    models.Avg('rating'), 
-                    0, 
-                    output_field=models.DecimalField(
-                        max_digits      =4,
-                        decimal_places  =2
-                    )),
-            )['avg']
+    # @property
+    # def rating_avg(self):
+    #     return self.reviews.aggregate(
+    #             avg=Coalesce(
+    #                 models.Avg('rating'), 
+    #                 0, 
+    #                 output_field=models.DecimalField(
+    #                     max_digits      =4,
+    #                     decimal_places  =2
+    #                 )),
+    #         )['avg']
 
-    @property
-    def reviews_count(self):
-        return self.reviews.count()
+    # @property
+    # def reviews_count(self):
+    #     return self.reviews.count()
 
 class History(TimeStampedModel):
 

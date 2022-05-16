@@ -9,6 +9,8 @@ from rest_framework.status import (
 
     HTTP_400_BAD_REQUEST
 )
+from django.db.models import Avg, Count, DecimalField
+from django.db.models.functions import Coalesce
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -35,7 +37,7 @@ class FoodList(APIView):
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
-        foods       = Food.objects.all().select_related('category').prefetch_related('histories')
+        foods       = Food.objects.all()
         serializer  = self.serializer_class(foods, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -63,7 +65,11 @@ class FoodDetail(APIView):
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request, pk):
-        food        = Food.objects.get(pk=pk)
+        food        = Food.objects.select_related(
+            'category'
+        ).prefetch_related(
+            'histories', 'histories__review'
+        ).get(pk=pk)
         serializer  = self.serializer_class(food)
         return Response(serializer.data, status=HTTP_200_OK)
 
