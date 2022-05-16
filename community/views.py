@@ -21,19 +21,29 @@ from community.serializers import (
 )
 from community.models import Category, Post, Comment
 from core.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from core.utils import Pagination, PaginationHandlerMixin
 
-class PostList(APIView):
-    serializer_class= PostListSerializer
+class PostList(APIView, PaginationHandlerMixin):
+    pagination_class    = Pagination
+    serializer_class    = PostListSerializer
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
 
     @swagger_auto_schema(   
         operation_id            = '게시글 목록 조회',
         operation_description   = '게시글 목록을 조회합니다.',
+        manual_parameters       = [
+            openapi.Parameter('c', openapi.IN_QUERY, description='Category id', type=openapi.TYPE_STRING),
+            openapi.Parameter('q', openapi.IN_QUERY, description='Search for title', type=openapi.TYPE_STRING),
+            openapi.Parameter('u', openapi.IN_QUERY, description='Search for user nickname', type=openapi.TYPE_STRING),
+            openapi.Parameter('s', openapi.IN_QUERY, description='Sort by', type=openapi.TYPE_STRING),
+            openapi.Parameter('limit', openapi.IN_QUERY, description='Page limit size', type=openapi.TYPE_STRING),
+            openapi.Parameter('page', openapi.IN_QUERY, description='Page number', type=openapi.TYPE_STRING),
+        ],
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
-        posts       = Post.objects.all()
+        posts       = Post.objects.all().order_by('-created_at')
 
         if c := request.query_params.get('c'):
             posts   = posts.filter(category=c)
@@ -42,15 +52,23 @@ class PostList(APIView):
             posts   = posts.filter(title__icontains=q)
 
         if u := request.query_params.get('u'):
-            posts   = posts.filter(user__username__icontains=u)
+            posts   = posts.filter(user__profile__username__icontains=u)
 
         if s := request.query_params.get('s'):
             if s == 'comment':
                 posts = posts.annotate(
                     count=Count('comments')
-                    ).order_by('-count')
+                    ).order_by('-count', '-created_at')
 
-        serializer  = self.serializer_class(posts, many=True)
+        page        = self.paginate_queryset(posts)
+
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(posts, many=True)
+            
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   

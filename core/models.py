@@ -18,3 +18,13 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract    = True
+
+class GetRequestLog(models.Model):
+    endpoint        = models.CharField(max_length=100, null=True)
+    user            = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    response_code   = models.PositiveSmallIntegerField()
+    remote_address  = models.CharField(max_length=20, null=True)
+    exec_time       = models.IntegerField(null=True)
+    date            = models.DateTimeField(auto_now=True)
+    body_response   = models.TextField()
+    body_request    = models.TextField()

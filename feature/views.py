@@ -9,8 +9,6 @@ from rest_framework.status import (
 
     HTTP_400_BAD_REQUEST
 )
-from django.db.models import Avg, Count, DecimalField
-from django.db.models.functions import Coalesce
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -24,9 +22,11 @@ from feature.serializers import (
 )
 from feature.models import Category, Food, History, Review
 from core.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from core.utils import Pagination, PaginationHandlerMixin
 
 
-class FoodList(APIView):
+class FoodList(APIView, PaginationHandlerMixin):
+    pagination_class    = Pagination
     serializer_class    = FoodListSerializer
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
@@ -34,11 +34,21 @@ class FoodList(APIView):
     @swagger_auto_schema(
         operation_id            = '음식 목록 조회',
         operation_description   = '음식 목록을 조회합니다.',
+        manual_parameters       = [
+            openapi.Parameter('limit', openapi.IN_QUERY, description='Page limit size', type=openapi.TYPE_STRING),
+            openapi.Parameter('page', openapi.IN_QUERY, description='Page number', type=openapi.TYPE_STRING),
+        ],
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         foods       = Food.objects.all()
-        serializer  = self.serializer_class(foods, many=True)
+        page = self.paginate_queryset(foods)
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(foods, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   
@@ -111,7 +121,8 @@ class FoodDetail(APIView):
         food.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
-class HistoryList(APIView):
+class HistoryList(APIView, PaginationHandlerMixin):
+    pagination_class    = Pagination
     serializer_class    = HistorySerializer
     permission_classes  = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
@@ -119,11 +130,21 @@ class HistoryList(APIView):
     @swagger_auto_schema(
         operation_id            = '기록 조회',
         operation_description   = '나의 음식 선택 기록을 조회합니다.',
+        manual_parameters       = [
+            openapi.Parameter('limit', openapi.IN_QUERY, description='Page limit size', type=openapi.TYPE_STRING),
+            openapi.Parameter('page', openapi.IN_QUERY, description='Page number', type=openapi.TYPE_STRING),
+        ],
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
         histories   = History.objects.filter(user=request.user)
-        serializer  = self.serializer_class(histories, many=True)
+        page        = self.paginate_queryset(histories)
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(histories, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   
@@ -158,7 +179,8 @@ class HistoryDetail(APIView):
         serializer  = self.serializer_class(history.review)
         return Response(serializer.data, status=HTTP_200_OK)
 
-class FoodReviewList(APIView):
+class FoodReviewList(APIView, PaginationHandlerMixin):
+    pagination_class    = Pagination
     serializer_class    = ReviewSerializer
     permission_classes  = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication,)
@@ -166,11 +188,23 @@ class FoodReviewList(APIView):
     @swagger_auto_schema(
         operation_id            = '음식 리뷰 조회',
         operation_description   = '특정 음식의 리뷰를 조회합니다.',
+        manual_parameters       = [
+            openapi.Parameter('limit', openapi.IN_QUERY, description='Page limit size', type=openapi.TYPE_STRING),
+            openapi.Parameter('page', openapi.IN_QUERY, description='Page number', type=openapi.TYPE_STRING),
+        ],
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request, pk):
         reviews     = Review.objects.filter(history__food_id=pk)
-        serializer  = self.serializer_class(reviews, many=True)
+        page        = self.paginate_queryset(reviews)
+
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(reviews, many=True)
+
         return Response(serializer.data, status=HTTP_200_OK)
 
 class ReviewList(APIView):
@@ -185,7 +219,15 @@ class ReviewList(APIView):
     )
     def get(self, request):
         reviews     = Review.objects.all()
-        serializer  = self.serializer_class(reviews, many=True)
+        page        = self.paginate_queryset(reviews)
+
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(reviews, many=True)
+            
         return Response(serializer.data, status=HTTP_200_OK)
 
     @swagger_auto_schema(   

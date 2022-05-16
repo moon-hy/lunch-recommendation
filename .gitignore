@@ -3,10 +3,12 @@ __pycache__
 .env
 secrets.json
 *db.sqlite3
-media
+media/*
 images
 venv
 */migrations/**
 !*/migrations/__init__.py
 *.json
 data/*
+logs/*
+static
