@@ -82,14 +82,12 @@ SWAGGER_SETTINGS = {
         }
     }
 }
-# JWT_AUTH = {
-#    'JWT_SECRET_KEY': SECRET_KEY,
-#    'JWT_ALGORITHM': 'HS256',
-#    'JWT_VERIFY_EXPIRATION' : True,
-#    'JWT_ALLOW_REFRESH': True,
-#    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),
-#    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=3),
-#    'JWT_RESPONSE_PAYLOAD_HANDLER': 'api.custom_responses.my_jwt_response_handler'
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379',
+#     },
 # }
 
 MIDDLEWARE = [
