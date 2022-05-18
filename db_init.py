@@ -1,9 +1,11 @@
 import csv
 import os
+import shutil
 
 import django
 from django.core.files.images import ImageFile
 import pandas as pd
+from config.settings import MEDIA_ROOT, MEDIA_URL
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -35,7 +37,17 @@ def insert_category():
     print('DONE: Insert Category data.')
 
 IMAGE_PATH = './data/images/'
+MEDIA_FOOD = os.path.join(MEDIA_ROOT, 'images')
+
+def delete_food_images():
+    try:
+        shutil.rmtree(MEDIA_FOOD)
+        print('DELETED: ./media/images/food')
+    except OSError as e:
+        print("Error: %s : %s" % (MEDIA_FOOD, e.strerror))
+
 def insert_food():
+    delete_food_images()
     foods = []
     with open(CSV_PATH+'foods.csv', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
