@@ -3,6 +3,7 @@ from django.urls import path, include
 from feature.views import (
     FoodList,
     FoodDetail,
+    FoodRanking,
     FoodReviewList,
 
     HistoryList,
@@ -29,4 +30,6 @@ urlpatterns = [
 
     path('/categories', CategoryList.as_view()),
     path('/categories/<int:pk>', CategoryDetail.as_view()),
+
+    path('/ranking/foods', FoodRanking.as_view())
 ]

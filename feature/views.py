@@ -1,3 +1,7 @@
+from datetime import timedelta 
+
+from django.utils import timezone
+from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -23,6 +27,7 @@ from feature.serializers import (
 from feature.models import Category, Food, History, Review
 from core.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from core.utils import Pagination, PaginationHandlerMixin
+from core.models import GetRequestLog
 
 
 class FoodList(APIView, PaginationHandlerMixin):
@@ -303,4 +308,42 @@ class CategoryDetail(APIView):
     def get(self, request, pk):
         category    = Category.objects.get(pk=pk)
         serializer  = self.serializer_class(category)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+class FoodRanking(APIView):
+    '''
+    # TODO: 추후 Redis cache 사용
+    '''
+    serializer_class    = FoodListSerializer
+    authentication_classes = (TokenAuthentication,)
+
+    @swagger_auto_schema(
+        operation_id            = '음식 랭킹',
+        operation_description   = 'Request log를 기반으로 음식 랭킹을 최대 10개까지 조회합니다.',
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
+    )
+    def get(self, request):
+        now         = timezone.now()
+        today_logs  = GetRequestLog.objects.all().values(
+            'endpoint'
+        ).filter(
+            date__gt=now-timedelta(1)
+        ).filter(
+            endpoint__regex=r'^/api/feature/foods/[0-9]+$'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')
+
+        foods       = []
+        log_idx     = 0
+        
+        while len(foods)<10 and log_idx<len(today_logs):
+            food_id = today_logs[log_idx]['endpoint'].split('/')[-1]
+            try:
+                foods.append(Food.objects.get(pk=food_id))
+            except:
+                pass
+            log_idx += 1
+
+        serializer  = self.serializer_class(foods, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
