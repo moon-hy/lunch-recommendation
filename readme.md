@@ -2,13 +2,14 @@
 
 
 0. pip install django djangorestframework django-cors-headers drf-yasg flex Pillow mysqlclient
-1. python manage.py makemigrations
-2. python manage.py migrate
-    > DB 초기화: python manage.py flush
-0. python process_data.py
-0. python db_init.py
-3. python manage.py createsuperuser
-4. python manage.py runserver
+1. ./init_for_test.bat (아래의 과정을 포함)
+    1. python manage.py makemigrations
+    2. python manage.py migrate
+        > DB 초기화: python manage.py flush
+    0. python process_data.py
+    0. python db_init.py
+    3. python manage.py createsuperuser
+    4. python manage.py runserver
 
 + Header
     - Authorization: Token {Token}
@@ -30,6 +31,5 @@
 
 # todo
 
-- 사용자의 선호 음식, 비선호 음식 검색
 - 추천 결과 반환 API
 - ...
