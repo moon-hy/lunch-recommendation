@@ -3,5 +3,5 @@ from authentication.views import CustomAuthToken
 
 
 urlpatterns = [
-    path('/token', CustomAuthToken.as_view()),
+    path('token', CustomAuthToken.as_view()),
 ]

@@ -6,5 +6,5 @@ from recommendation.views import (
 
 
 urlpatterns = [
-    path('/random-recommend', RandomRecommend.as_view())
+    path('random-recommend', RandomRecommend.as_view())
 ]
