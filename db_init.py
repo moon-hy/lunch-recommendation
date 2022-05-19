@@ -1,9 +1,13 @@
 import csv
 import os
 import shutil
+import random
+from datetime import timedelta
 
 import django
+from django.utils import timezone
 from django.core.files.images import ImageFile
+from django.contrib.auth import get_user_model
 import pandas as pd
 from config.settings import MEDIA_ROOT, MEDIA_URL
 
@@ -69,6 +73,56 @@ def insert_food():
     f.Food.objects.bulk_create(foods)
     print('DONE: Insert Food data.')
 
+User    = get_user_model()
+
+def update_admin():
+    user        = User.objects.get(username='admin')
+    profile     = user.profile
+    profile.nickname = 'admin'
+    profile.interest_in = f.Category.objects.get(pk=1)
+    profile.save()
+    print('DONE: Update admin. Set admin\'s interest_in = {Category_id:1}')
+
+user_size= 20
+def create_users():
+    for i in range(1,user_size+1):
+        user    = User(
+            username    = f'test{i}',
+            password    = 'qwer1234!@',
+        )
+        user.save()
+        profile = user.profile
+        profile.nickname = f'test{i}'
+        profile.interest_in = f.Category.objects.get(pk=((i-1)%8+1))
+        profile.save()
+    print('DONE: Create users: <test1 ~ test8>')
+
+def create_histories():
+    now         = timezone.now()
+
+    for i in range(1,user_size+1):
+        user    = User.objects.get(username=f'test{i}')
+        interest= user.profile.interest_in
+
+        all_cats= f.Category.objects.all()
+        weights     = [1]*8
+        weights[interest.id-1]= 3
+        candidates = random.choices(all_cats, weights, k=10)
+
+        for day, category in enumerate(candidates):
+            food    = random.choice(category.foods.all())
+            history = f.History.objects.create(
+                food=food,
+                user=user,
+            )
+            history.created_at = now-timedelta(days=day+1)
+            history.save(update_fields=['created_at'])
+    print('DONE: Create histories by considering their interest')
+
+
 insert_posts_category()
 insert_category()
 insert_food()
+update_admin()
+create_users()
+create_histories()
