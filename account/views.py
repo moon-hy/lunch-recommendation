@@ -15,13 +15,14 @@ from drf_yasg import openapi
 
 from account.models import Profile
 from account.serializers import (
+    InterestSerializer,
     LikeDislikeSerializer,
     ProfileSerializer,
     UserListSerializer,
     UserDetailSerializer,
     UserRegisterSerializer,
 )
-from feature.models import Food
+from feature.models import Category, Food
 
 
 User = get_user_model()
@@ -294,5 +295,24 @@ class DislikeListByUser(APIView):
         serializer  = self.serializer_class(dislikes, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
-
+class Interest(APIView):
+    serializer_class    = InterestSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes  = (IsAuthenticated,)
+    
+    @swagger_auto_schema(   
+        operation_id            = '대분류 선호 등록',
+        operation_description   = '대분류 중 가장 선호하는 카테고리를 등록합니다.',
+        request_body            = serializer_class,
+        responses               = {201: openapi.Response('')}
+    )
+    def post(self, request):
+        user        = request.user
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            category= serializer.data['category_id']
+            user.profile.interest_in = Category.objects.get(pk=category)
+            user.profile.save()
+            return Response(status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 

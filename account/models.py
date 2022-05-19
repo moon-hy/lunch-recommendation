@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from feature.models import Food
+from feature.models import Food, Category
 
 
 class Profile(models.Model):
@@ -18,6 +18,15 @@ class Profile(models.Model):
     nickname    = models.CharField(
         verbose_name= 'nickname',
         max_length  = 32
+    )
+
+    interest_in = models.ForeignKey(
+        Category,
+        related_name= 'interested',
+        verbose_name= 'interest_in',
+        blank       = True,
+        null        = True,
+        on_delete   = models.CASCADE
     )
 
     likes       = models.ManyToManyField(

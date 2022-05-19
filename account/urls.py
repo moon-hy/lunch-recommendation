@@ -10,6 +10,7 @@ from account.views import (
     DislikeList,
     UserList,
     UserProfile,
+    Interest,
 )
 
 
@@ -18,6 +19,8 @@ urlpatterns = [
     path('users/<int:pk>', UserDetail.as_view()),
 
     path('user', UserProfile.as_view()),
+    
+    path('user/interest', Interest.as_view()),
 
     path('user/likes', LikeList.as_view()),
     path('user/likes/<int:pk>', Like.as_view()),

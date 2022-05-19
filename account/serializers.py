@@ -8,7 +8,15 @@ from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 
 from account.models import Profile
+from feature.models import Category
 
+
+class InterestSerializer(serializers.Serializer):
+    category_id = serializers.PrimaryKeyRelatedField(
+        source  = 'interest_in',
+        queryset= Category.objects.all(),
+        required= True,
+    )
 
 class LikeDislikeSerializer(serializers.Serializer):
     def to_representation(self, instance):
@@ -20,11 +28,12 @@ class LikeDislikeSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     likes       = LikeDislikeSerializer('likes', many=True)
     dislikes    = LikeDislikeSerializer('dislikes', many=True)
-
+    interest_in = serializers.ReadOnlyField(source='interest_in.name')
+    
     class Meta:
         model   = Profile
         fields  = [
-            'nickname', 'likes', 'dislikes'
+            'nickname', 'interest_in', 'likes', 'dislikes'
         ]
 
 class UserListSerializer(serializers.ModelSerializer):
