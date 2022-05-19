@@ -18,16 +18,19 @@ class InterestSerializer(serializers.Serializer):
         required= True,
     )
 
-class LikeDislikeSerializer(serializers.Serializer):
+class LikeDislikeSerializer(serializers.ModelSerializer):
+
     def to_representation(self, instance):
         return {
-            'food_id'    : instance.id,
-            'food_name'  : instance.name
+            'food_id'   : instance.food.id,
+            'food_name' : instance.food.name,
+            'image'     : instance.food.image.url,
+            'created_at': instance.created_at,
         }
 
 class ProfileSerializer(serializers.ModelSerializer):
-    likes       = LikeDislikeSerializer('likes', many=True)
-    dislikes    = LikeDislikeSerializer('dislikes', many=True)
+    likes       = LikeDislikeSerializer(source='profilelike_set', many=True)
+    dislikes    = LikeDislikeSerializer(source='profiledislike_set', many=True)
     interest_in = serializers.ReadOnlyField(source='interest_in.name')
     
     class Meta:

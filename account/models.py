@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from core.models import TimeStampedModel
 
 from feature.models import Food, Category
 
@@ -31,6 +32,7 @@ class Profile(models.Model):
 
     likes       = models.ManyToManyField(
         Food,
+        through     = 'ProfileLike',
         related_name= 'like_users',
         verbose_name= 'like_foods',
         blank       = True
@@ -38,10 +40,14 @@ class Profile(models.Model):
 
     dislikes    = models.ManyToManyField(
         Food,
+        through     = 'ProfileDislike',
         related_name= 'dislike_users',
         verbose_name= 'dislike_foods',
         blank       = True
     )
+    
+    class Meta:
+        db_table = 'account_profile'
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -51,3 +57,29 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+class ProfileLike(TimeStampedModel):
+    food        = models.ForeignKey(
+        Food,
+        on_delete   = models.CASCADE
+    )
+    profile     = models.ForeignKey(
+        Profile,
+        on_delete   = models.CASCADE
+    )
+
+    class Meta:
+        db_table = 'account_profile_like'
+
+class ProfileDislike(TimeStampedModel):
+    food        = models.ForeignKey(
+        Food,
+        on_delete   = models.CASCADE
+    )
+    profile     = models.ForeignKey(
+        Profile,
+        on_delete   = models.CASCADE
+    )
+
+    class Meta:
+        db_table = 'account_profile_dislike'

@@ -186,7 +186,7 @@ class LikeList(APIView):
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
-        likes       = request.user.profile.likes
+        likes       = request.user.profile.profilelike_set
         serializer  = self.serializer_class(likes, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -201,7 +201,7 @@ class DislikeList(APIView):
         responses               = {200: openapi.Response('', serializer_class(many=True))}
     )
     def get(self, request):
-        dislikes       = request.user.profile.dislikes
+        dislikes       = request.user.profile.profiledislike_set
         serializer  = self.serializer_class(dislikes, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -212,7 +212,7 @@ class Like(APIView):
     @swagger_auto_schema(   
         operation_id            = '선호 음식 추가',
         operation_description   = '사용자 정보에 선호 음식을 추가합니다.',
-        responses               = {204: openapi.Response('No Content')}
+        responses               = {200: openapi.Response('No Content')}
     )
     def put(self, request, pk):
         likes       = request.user.profile.likes
@@ -223,7 +223,7 @@ class Like(APIView):
                 'detail': 'The food is already in dislikes.'
             }, status=HTTP_400_BAD_REQUEST)
         likes.add(food)
-        return Response(status=HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_200_OK)
 
     @swagger_auto_schema(   
         operation_id            = '선호 음식 제거',
@@ -244,13 +244,13 @@ class Dislike(APIView):
     @swagger_auto_schema(   
         operation_id            = '비선호 음식 추가',
         operation_description   = '사용자 정보에 선호 음식을 추가합니다.',
-        responses               = {204: openapi.Response('No Content')}
+        responses               = {200: openapi.Response('No Content')}
     )
     def put(self, request, pk):
         dislikes    = request.user.profile.dislikes
         food        = Food.objects.get(pk=pk)
         dislikes.add(food)
-        return Response(status=HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_200_OK)
 
     @swagger_auto_schema(   
         operation_id            = '비선호 음식 제거',
@@ -275,7 +275,7 @@ class LikeListByUser(APIView):
     )
     def get(self, request, pk):
         user        = User.objects.get(pk=pk)
-        likes       = user.profile.likes
+        likes       = user.profile.profilelike_set.select_related('food')
         serializer  = self.serializer_class(likes, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -291,7 +291,7 @@ class DislikeListByUser(APIView):
     )
     def get(self, request, pk):
         user        = User.objects.get(pk=pk)
-        dislikes    = user.profile.dislikes
+        dislikes    = user.profile.profiledislike_set
         serializer  = self.serializer_class(dislikes, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
