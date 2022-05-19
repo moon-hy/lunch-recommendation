@@ -136,7 +136,7 @@ def create_histories():
             history.created_at = now-timedelta(days=day+1)
             history.save(update_fields=['created_at'])
 
-    print(f'DONE: Create histories by considering their interest ({hitsory_size} histories per person')
+    print(f'DONE: Create histories by considering their interest ({history_size} histories per person')
 
 def createCSV():
     histories   = f.History.objects.all()[:]

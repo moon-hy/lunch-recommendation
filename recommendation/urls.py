@@ -1,6 +1,7 @@
 from django.urls import path
 
 from recommendation.views import (
+    ALSRecommend,
     InterestPopularRecommend,
     InterestUserRecommend,
     MemoryBasedRecommend,
@@ -15,4 +16,5 @@ urlpatterns = [
     path('interest-popular', InterestPopularRecommend.as_view()),
     path('interest-user', InterestUserRecommend.as_view()),
     path('memory-cf', MemoryBasedRecommend.as_view()),
+    path('als', ALSRecommend.as_view()),
 ]

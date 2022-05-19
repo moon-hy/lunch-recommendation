@@ -1,5 +1,6 @@
 from random import choices, sample
 import datetime
+import joblib
 
 import pandas as pd
 import numpy as np
@@ -21,7 +22,7 @@ from rest_framework.status import (
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from feature.models import Food, History
+from feature.models import Food, History, Category
 from feature.serializers import FoodDetailSerializer, FoodListSerializer
 
 
@@ -227,3 +228,58 @@ class MemoryBasedRecommend(APIView):
         foods       = Food.objects.filter(id__in=top_5_food_id)
         seriralizer = self.serializer_class(foods, many=True)
         return Response(seriralizer.data, status=HTTP_200_OK)
+
+class ALSRecommend(APIView):
+    serializer_class    = FoodListSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        model       = joblib.load('./data/als_model.pkl')
+        category_map= joblib.load('./data/als_category.pkl')
+
+        last_week   = datetime.date.today() - datetime.timedelta(days=30)
+
+        user_hist   = request.user.histories.filter(
+            created_at__gte=last_week
+        ).values('food__category__name')
+
+        user_items  = []
+        for data in user_hist:
+            if c := category_map.get(data['food__category__name']):
+                user_items.append(c)
+        
+        rec_category= model.recommend(
+            request.user.id, 
+            user_items, 
+            N=8, 
+            filter_already_liked_items=False
+        )[0][:3]
+        
+        category_map= {category_map[name]: name for name in category_map}
+        categories  = []
+        for rec in rec_category:
+            cat_name    = category_map[rec]
+            categories.append(cat_name)
+        
+        histories   = History.objects.filter(
+            food__category__name__in=categories
+        ).values(
+            'food'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')[:5]
+        
+        foods       = []
+        idx         = 0
+        
+        while len(foods)<10 and idx<len(histories):
+            food_id = histories[idx]['food']
+            try:
+                foods.append(Food.objects.get(pk=food_id))
+            except:
+                pass
+            idx += 1
+
+        serializer  = self.serializer_class(foods, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)

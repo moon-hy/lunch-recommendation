@@ -1,7 +1,7 @@
 # init
 
 
-0. pip install django djangorestframework django-cors-headers drf-yasg flex Pillow mysqlclient scikit-learn pandas numpy
+0. pip install django djangorestframework django-cors-headers drf-yasg flex Pillow mysqlclient scikit-learn pandas numpy implicit
 0. (OR) pip install -r requirements.txt
 1. ./init_for_test.bat (아래의 과정을 포함)
     1. python manage.py makemigrations
