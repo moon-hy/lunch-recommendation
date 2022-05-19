@@ -35,7 +35,7 @@ class RandomRecommend(APIView):
     @swagger_auto_schema(   
         operation_id            = '음식 추천 - 랜덤',
         operation_description   = '랜덤으로 음식을 추천합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer)}
+        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
     )
     def get(self, request):
         foods       = Food.objects.all()
@@ -53,7 +53,7 @@ class YesterdayPopularRecommend(APIView):
     @swagger_auto_schema(   
         operation_id            = '음식 추천 - 인기',
         operation_description   = '다른 사용자들이 어제 가장 많이 먹은 음식을 추천합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer)}
+        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
     )
     def get(self, request):
         yesterday   = datetime.date.today() - datetime.timedelta(days=1)
@@ -88,7 +88,7 @@ class InterestPopularRecommend(APIView):
     @swagger_auto_schema(   
         operation_id            = '음식 추천 - 선호대분류 기반',
         operation_description   = '선택한 선호 대분류에서 가장 인기있는 음식을 추천합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer)}
+        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
     )
     def get(self, request):
         last_month  = datetime.date.today() - datetime.timedelta(days=30)
@@ -127,7 +127,7 @@ class InterestUserRecommend(APIView):
     @swagger_auto_schema(   
         operation_id            = '음식 추천 - 유저/선호대분류 기반',
         operation_description   = '같은 선호대분류를 선택한 유저들의 인기 음식을 추천합니다.',
-        responses               = {200: openapi.Response('', FoodListSerializer)}
+        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
     )
     def get(self, request):
         users       = User.objects.select_related(
@@ -163,6 +163,11 @@ class MemoryBasedRecommend(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated, )
 
+    @swagger_auto_schema(   
+        operation_id            = '음식 추천 - 메모리 기반 CF',
+        operation_description   = '메모리 기반의 협업 필터링 추천을 진행합니다. top 5의 음식 반환.',
+        responses               = {200: openapi.Response('', FoodListSerializer(many=True))}
+    )
     def get(self, request):
         df= pd.read_csv('./data/history_test.csv')
         df['date(utc)'] = df['date(utc)'].astype('datetime64')
