@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.core.files.images import ImageFile
 from django.contrib.auth import get_user_model
 import pandas as pd
-from config.settings import MEDIA_ROOT, MEDIA_URL
+from config.settings import MEDIA_ROOT
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -42,7 +42,6 @@ def insert_category():
 
 IMAGE_PATH = './data/images/'
 MEDIA_FOOD = os.path.join(MEDIA_ROOT, 'images')
-
 def delete_food_images():
     try:
         shutil.rmtree(MEDIA_FOOD)
@@ -74,16 +73,34 @@ def insert_food():
     print('DONE: Insert Food data.')
 
 User    = get_user_model()
-
 def update_admin():
     user        = User.objects.get(username='admin')
     profile     = user.profile
     profile.nickname = 'admin'
     profile.interest_in = f.Category.objects.get(pk=1)
     profile.save()
+
+    user    = User.objects.get(username='admin')
+    interest= user.profile.interest_in
+
+    all_cats= f.Category.objects.all()
+    weights     = [1]*len(all_cats)
+    weights[interest.id-1]= 3
+    candidates = random.choices(all_cats, weights, k=20)
+
+    now         = timezone.now()
+    for day, category in enumerate(candidates):
+        food    = random.choice(category.foods.all())
+        history = f.History.objects.create(
+            food=food,
+            user=user,
+        )
+        history.created_at = now-timedelta(days=day+1)
+        history.save(update_fields=['created_at'])
+
     print('DONE: Update admin. Set admin\'s interest_in = {Category_id:1}')
 
-user_size= 20
+user_size= 30
 def create_users():
     for i in range(1,user_size+1):
         user    = User(
@@ -95,8 +112,9 @@ def create_users():
         profile.nickname = f'test{i}'
         profile.interest_in = f.Category.objects.get(pk=((i-1)%8+1))
         profile.save()
-    print('DONE: Create users: <test1 ~ test8>')
+    print(f'DONE: Create users: <test1 ~ test{user_size}>')
 
+history_size = 20
 def create_histories():
     now         = timezone.now()
 
@@ -105,9 +123,9 @@ def create_histories():
         interest= user.profile.interest_in
 
         all_cats= f.Category.objects.all()
-        weights     = [1]*8
+        weights     = [1]*len(all_cats)
         weights[interest.id-1]= 3
-        candidates = random.choices(all_cats, weights, k=10)
+        candidates = random.choices(all_cats, weights, k=history_size)
 
         for day, category in enumerate(candidates):
             food    = random.choice(category.foods.all())
@@ -117,7 +135,8 @@ def create_histories():
             )
             history.created_at = now-timedelta(days=day+1)
             history.save(update_fields=['created_at'])
-    print('DONE: Create histories by considering their interest')
+
+    print('DONE: Create histories by considering their interest ({hitsory_size} histories per person')
 
 def createCSV():
     histories   = f.History.objects.all()[:]
