@@ -119,6 +119,21 @@ def create_histories():
             history.save(update_fields=['created_at'])
     print('DONE: Create histories by considering their interest')
 
+def createCSV():
+    histories   = f.History.objects.all()[:]
+    df          = pd.DataFrame()
+
+    for history in histories:
+        tmp     = pd.DataFrame(
+            {
+                'user': [history.user.id],
+                'food': [history.food.id],
+                'date(utc)': [history.created_at]
+            }
+        )
+        df      = pd.concat([df, tmp])
+    df.to_csv(f'./data/history_test.csv', index=False)
+    print('DONE: Create CSV file of history to \'./data/history_test.csv\'. (For ML or DS, \'date\': UTC)')
 
 insert_posts_category()
 insert_category()
@@ -126,3 +141,4 @@ insert_food()
 update_admin()
 create_users()
 create_histories()
+createCSV()
