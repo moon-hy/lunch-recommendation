@@ -55,7 +55,7 @@ class FoodListSerializer(serializers.ModelSerializer):
             'name'      : {'required': True, 'write_only': True},
             'category'  : {'required': True, 'write_only': True},
             'kcal'      : {'required': False, 'write_only': True},
-            'image'     : {'required': False, 'write_only': True}
+            'image'     : {'required': False, }
         }
 
 class FoodCreateSerializer(serializers.ModelSerializer):
