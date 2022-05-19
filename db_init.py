@@ -154,6 +154,21 @@ def createCSV():
     df.to_csv(f'./data/history_test.csv', index=False)
     print('DONE: Create CSV file of history to \'./data/history_test.csv\'. (For ML or DS, \'date\': UTC)')
 
+    foods       = f.Food.objects.all()[:]
+    df          = pd.DataFrame()
+    for food in foods:
+        tmp     = pd.DataFrame(
+            {
+                'food_name': [food.name],
+                'food_category': [food.category.name],
+                'food_id': [food.id]
+            }
+        )
+        df      = pd.concat([df, tmp])
+    df.to_csv(f'./data/food_test.csv', index=False)
+
+    print('DONE: Create CSV file of history to \'./data/food_test.csv\'. (For ML or DS)')
+
 insert_posts_category()
 insert_category()
 insert_food()
