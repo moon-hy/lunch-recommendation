@@ -18,7 +18,7 @@ class InterestSerializer(serializers.Serializer):
         required= True,
     )
 
-class LikeDislikeSerializer(serializers.ModelSerializer):
+class LikeDislikeSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return {
