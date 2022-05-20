@@ -2,6 +2,7 @@ from django.urls import path
 
 from account.views import (
     DislikeListByUser,
+    HistoryList,
     LikeListByUser,
     UserDetail,
     Like,
@@ -19,7 +20,7 @@ urlpatterns = [
     path('users/<int:pk>', UserDetail.as_view()),
 
     path('user', UserProfile.as_view()),
-    
+    path('user/histories', HistoryList.as_view()),
     path('user/interest', Interest.as_view()),
 
     path('user/likes', LikeList.as_view()),

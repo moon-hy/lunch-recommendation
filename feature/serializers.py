@@ -94,11 +94,12 @@ class HistorySerializer(serializers.ModelSerializer):
         source          = 'food',
     )
     food_name   = serializers.ReadOnlyField(source='food.name')
+    image       = serializers.ReadOnlyField(source='food.image.url')
 
     class Meta:
         model   = History
         fields  = [
-            'history_id', 'food_id', 'food_name', 'created_at', 'is_reviewed'
+            'history_id', 'food_id', 'food_name', 'created_at', 'is_reviewed', 'image'
         ]
         extra_kwargs= {
             'food_id'   : {'required': True}

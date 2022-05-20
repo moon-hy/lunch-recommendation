@@ -22,7 +22,9 @@ from account.serializers import (
     UserDetailSerializer,
     UserRegisterSerializer,
 )
-from feature.models import Category, Food
+from feature.models import Category, Food, History
+from feature.serializers import HistorySerializer, ReviewSerializer
+from core.utils import Pagination, PaginationHandlerMixin
 
 
 User = get_user_model()
@@ -316,3 +318,61 @@ class Interest(APIView):
             return Response(status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+
+class HistoryList(APIView, PaginationHandlerMixin):
+    pagination_class    = Pagination
+    serializer_class    = HistorySerializer
+    permission_classes  = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    @swagger_auto_schema(
+        operation_id            = '기록 조회',
+        operation_description   = '나의 음식 선택 기록을 조회합니다.',
+        manual_parameters       = [
+            openapi.Parameter('limit', openapi.IN_QUERY, description='Page limit size', type=openapi.TYPE_STRING),
+            openapi.Parameter('page', openapi.IN_QUERY, description='Page number', type=openapi.TYPE_STRING),
+        ],
+        responses               = {200: openapi.Response('', serializer_class(many=True))}
+    )
+    def get(self, request):
+        histories   = History.objects.filter(user=request.user)
+        page        = self.paginate_queryset(histories)
+        if page is not None:
+            serializer  = self.get_paginated_response(
+                self.serializer_class(page, many=True).data
+            )
+        else:
+            serializer  = self.serializer_class(histories, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    @swagger_auto_schema(   
+        operation_id            = '기록 추가',
+        operation_description   = '음식 선택 기록을 추가합니다.',
+        responses               = {201: openapi.Response('', serializer_class)}
+    )
+    def post(self, request):
+        serializer  = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class HistoryDetail(APIView):
+    serializer_class    = ReviewSerializer
+    permission_classes  = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    
+    def get_object(self, request, pk):
+        history     = History.objects.get(pk=pk)
+        self.check_object_permissions(request, history)
+        return history
+
+    @swagger_auto_schema(   
+        operation_id            = '기록 리뷰 조회',
+        operation_description   = '해당 기록의 리뷰를 조회합니다.',
+        responses               = {201: openapi.Response('', serializer_class)}
+    )
+    def get(self, request, pk):
+        history     = self.get_object(request, pk)
+        serializer  = self.serializer_class(history.review)
+        return Response(serializer.data, status=HTTP_200_OK)
